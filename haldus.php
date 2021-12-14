@@ -35,7 +35,12 @@ if(isset($_REQUEST['kustuta'])) {
     $kask->bind_param("i", $_REQUEST['kustuta']);
     $kask->execute();
 }
-
+if(isset($_REQUEST['kom'])) {
+    $kask = $yhendus->prepare("UPDATE konkurss SET kommentaar=' ' where id=?");
+    $kask->bind_param("s", $_REQUEST['kom']);
+    $kask->execute();
+    header("Location: $_SERVER[PHP_SELF]");
+}
 ?>
 <!doctype html>
 <html lang="et">
@@ -50,31 +55,31 @@ if(isset($_REQUEST['kustuta'])) {
 <nav class="topnav">
     <a href="konkurs.php">Administreerimise leht</a>
     <a href="haldus.php">Kasutaja leht</a>
+    <a href="https://github.com/ArtjomKabilov?tab=repositories">GitHub</a>
     <div class="dot"></div>
 </nav>
-<h1>Fotokonkurss "" halduse</h1>
+<h1>Fotokonkurss "loodus" halduse</h1>
 <?php
 //tabeli konkurss sisu näitamine
-$kask=$yhendus->prepare("SELECT id, nimi,pilt, lisamisaeg, punktid, avalik FROM konkurss");
-$kask->bind_result($id,$nimi,$pilt,$aeg,$punktid,$avalik);
+$kask=$yhendus->prepare("SELECT id, nimi,pilt, lisamisaeg,punktid, kommentaar, avalik FROM konkurss");
+$kask->bind_result($id,$nimi,$pilt,$aeg,$pun,$kom,$avalik);
 $kask->execute();
 
 echo "<table>";
 echo "<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
 <th>Nimi</th>
 <th>pilt</th>
 <th>lisamisaeg</th>
+<th>kommentaar</th>
 <th>punktid</th>
 </tr>";
 //fetch() - извлечение данных из набора данных
 while ($kask->fetch()) {
     echo "<tr>";
-    echo "<td>$nimi</td>";
-    echo "<td><img src='$pilt' alt='pilt>'></td>";
-    echo "<td>$aeg</td>";
-    echo "<td>$punktid</td>";
-    echo "<td><a href='?punkt=$id'>Punktid nulliks</a></td>";
-    //Peida-näita
     $avatekst="Ava";
     $param="avamine";
     $seisund="Peidetud";
@@ -83,9 +88,21 @@ while ($kask->fetch()) {
         $param="peitmine";
         $seisund="Avatud";
     }
+    $txt='"Kas sa tahad kustutada aeda fotod"';
     echo "<td>$seisund</td>";
     echo "<td><a href='?$param=$id'>$avatekst</a></td>";
-    echo "<td><a href='?kustuta=$id'>Kustuta</a></td>";
+    echo "<td><a href='?kustuta=$id' onclick='return confirm($txt)'>Kustuta</a></td>";
+    echo "<td>$nimi</td>";
+    echo "<td><img src='$pilt' alt='pilt>'></td>";
+    echo "<td>$aeg</td>";
+    echo "<td>$kom</td>";
+    echo "<td>$pun</td>";
+    echo "<td><a href='?punkt=$id'>Punktid nulliks</a> <br>
+            <a href='?kom=$id'>Kommetn nulliks</a>
+
+    </td>";
+    //Peida-näita
+
     echo "</tr>";
 }
 ?>
