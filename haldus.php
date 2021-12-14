@@ -1,18 +1,17 @@
 <?php
 require_once ('conf.php');
 global $yhendus;
+
+session_start();
+if(!isset($_SESSION['tuvustamine'])){
+    header('Location: login.php');
+    exit();
+}
+
 //punktide nulliksa UPDATE
 if(isset($_REQUEST['punkt'])) {
     $kask = $yhendus->prepare("UPDATE konkurss SET punktid=0 where id=?");
     $kask->bind_param("i", $_REQUEST['punkt']);
-    $kask->execute();
-    header("Location: $_SERVER[PHP_SELF]");
-}
-//Nimi lisamine konkurssi
-if(isset($_REQUEST['nimi'])) {
-    $kask = $yhendus->prepare("INSERT INTO konkurss(nimi,pilt,lisamisaeg)
-VALUES (?, ?, NOW())");
-    $kask->bind_param("ss", $_REQUEST['nimi'],$_REQUEST['pilt']);
     $kask->execute();
     header("Location: $_SERVER[PHP_SELF]");
 }
@@ -53,11 +52,22 @@ if(isset($_REQUEST['kom'])) {
 
 
 <nav class="topnav">
-    <a href="konkurs.php">Administreerimise leht</a>
-    <a href="haldus.php">Kasutaja leht</a>
-    <a href="https://github.com/ArtjomKabilov?tab=repositories">GitHub</a>
+    <a href="konkurs.php">kasutaja leht</a>
+    <a href="haldus.php">Administreerimise leht</a>
+    <?php
+    if ($_SESSION['onAdmin']==1){
+        echo "<a href='lisamine.php'>Lisamine</a>";
+    }
+    ?>
+    <a href="https://github.com/ArtjomKabilov/Konkurs">GitHub</a>
     <div class="dot"></div>
 </nav>
+<div class="knopka">
+    <p><?= $_SESSION["kasutaja" ]?> on sisse loogitud</p>
+    <form action="logout.php" method="post">
+        <input type="submit" value="Logi välja" name="logout">
+    </form>
+</div>
 <h1>Fotokonkurss "loodus" halduse</h1>
 <?php
 //tabeli konkurss sisu näitamine
@@ -106,13 +116,7 @@ while ($kask->fetch()) {
     echo "</tr>";
 }
 ?>
-<h2>Uue pilti lisamine konkurssi</h2>
-<form action="?">
-    <input type="text" name="nimi" placeholder="uus nimi">
-    <br>
-    <textarea name="pilt">pildi linki aadress</textarea>
-    <br>
-    <input type="submit" value="Lisa">
+
 
 </form>
 </body>
